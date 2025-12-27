@@ -1,0 +1,1159 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <link rel="stylesheet" href="css/leaflet.css">
+        <link rel="stylesheet" href="css/L.Control.Layers.Tree.css">
+        <link rel="stylesheet" href="css/qgis2web.css">
+        <link rel="stylesheet" href="css/fontawesome-all.min.css">
+        <link rel="stylesheet" href="css/leaflet.photon.css">
+        <style>
+        html, body, #map {
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            margin: 0;
+        }
+        </style>
+        <title></title>
+    </head>
+    <body>
+        <div id="map">
+        </div>
+        <script src="js/qgis2web_expressions.js"></script>
+        <script src="js/leaflet.js"></script>
+        <script src="js/L.Control.Layers.Tree.min.js"></script>
+        <script src="js/leaflet.rotatedMarker.js"></script>
+        <script src="js/leaflet.pattern.js"></script>
+        <script src="js/leaflet-hash.js"></script>
+        <script src="js/Autolinker.min.js"></script>
+        <script src="js/rbush.min.js"></script>
+        <script src="js/labelgun.min.js"></script>
+        <script src="js/labels.js"></script>
+        <script src="js/leaflet.photon.js"></script>
+        <script src="data/Ban_do_hanh_chinh_0.js"></script>
+        <script>
+        var map = L.map('map', {
+            zoomControl:false, maxZoom:28, minZoom:1
+        }).fitBounds([[15.56288475349044,102.73268688854193],[23.443836976165418,113.81966667668112]]);
+        var hash = new L.Hash(map);
+        map.attributionControl.setPrefix('<a href="https://github.com/tomchadwin/qgis2web" target="_blank">qgis2web</a> &middot; <a href="https://leafletjs.com" title="A JS library for interactive maps">Leaflet</a> &middot; <a href="https://qgis.org">QGIS</a>');
+        var autolinker = new Autolinker({truncate: {length: 30, location: 'smart'}});
+        // remove popup's row if "visible-with-data"
+        function removeEmptyRowsFromPopupContent(content, feature) {
+         var tempDiv = document.createElement('div');
+         tempDiv.innerHTML = content;
+         var rows = tempDiv.querySelectorAll('tr');
+         for (var i = 0; i < rows.length; i++) {
+             var td = rows[i].querySelector('td.visible-with-data');
+             var key = td ? td.id : '';
+             if (td && td.classList.contains('visible-with-data') && feature.properties[key] == null) {
+                 rows[i].parentNode.removeChild(rows[i]);
+             }
+         }
+         return tempDiv.innerHTML;
+        }
+        // modify popup if contains media
+        function addClassToPopupIfMedia(content, popup) {
+            var tempDiv = document.createElement('div');
+            tempDiv.innerHTML = content;
+            var imgTd = tempDiv.querySelector('td img');
+            if (imgTd) {
+                var src = imgTd.getAttribute('src');
+                if (/\.(jpg|jpeg|png|gif|bmp|webp|avif)$/i.test(src)) {
+                    popup._contentNode.classList.add('media');
+                    setTimeout(function() {
+                        popup.update();
+                    }, 10);
+                } else if (/\.(mp3|wav|ogg|aac)$/i.test(src)) {
+                    var audio = document.createElement('audio');
+                    audio.controls = true;
+                    audio.src = src;
+                    imgTd.parentNode.replaceChild(audio, imgTd);
+                    popup._contentNode.classList.add('media');
+                    setTimeout(function() {
+                        popup.setContent(tempDiv.innerHTML);
+                        popup.update();
+                    }, 10);
+                } else if (/\.(mp4|webm|ogg|mov)$/i.test(src)) {
+                    var video = document.createElement('video');
+                    video.controls = true;
+                    video.src = src;
+                    video.style.width = "400px";
+                    video.style.height = "300px";
+                    video.style.maxHeight = "60vh";
+                    video.style.maxWidth = "60vw";
+                    imgTd.parentNode.replaceChild(video, imgTd);
+                    popup._contentNode.classList.add('media');
+                    // Aggiorna il popup quando il video carica i metadati
+                    video.addEventListener('loadedmetadata', function() {
+                        popup.update();
+                    });
+                    setTimeout(function() {
+                        popup.setContent(tempDiv.innerHTML);
+                        popup.update();
+                    }, 10);
+                } else {
+                    popup._contentNode.classList.remove('media');
+                }
+            } else {
+                popup._contentNode.classList.remove('media');
+            }
+        }
+        var zoomControl = L.control.zoom({
+            position: 'topleft'
+        }).addTo(map);
+        var bounds_group = new L.featureGroup([]);
+        function setBounds() {
+        }
+        function pop_Ban_do_hanh_chinh_0(feature, layer) {
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['GID_1'] !== null ? autolinker.link(String(feature.properties['GID_1']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['GID_0'] !== null ? autolinker.link(String(feature.properties['GID_0']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Quốc gia</th>\
+                        <td class="visible-with-data" id="COUNTRY">' + (feature.properties['COUNTRY'] !== null ? autolinker.link(String(feature.properties['COUNTRY']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Tỉnh/Thành phố</th>\
+                        <td>' + (feature.properties['VARNAME_1'] !== null ? autolinker.link(String(feature.properties['VARNAME_1']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Loại hành chính</th>\
+                        <td class="visible-with-data" id="TYPE_1">' + (feature.properties['TYPE_1'] !== null ? autolinker.link(String(feature.properties['TYPE_1']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">English</th>\
+                        <td class="visible-with-data" id="ENGTYPE_1">' + (feature.properties['ENGTYPE_1'] !== null ? autolinker.link(String(feature.properties['ENGTYPE_1']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['CC_1'] !== null ? autolinker.link(String(feature.properties['CC_1']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Mã HASC</th>\
+                        <td class="visible-with-data" id="HASC_1">' + (feature.properties['HASC_1'] !== null ? autolinker.link(String(feature.properties['HASC_1']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['ISO_1'] !== null ? autolinker.link(String(feature.properties['ISO_1']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_Ban_do_hanh_chinh_0_0(feature) {
+            switch(String(feature.properties['VARNAME_1'])) {
+                case 'An Giang':
+                    return {
+                pane: 'pane_Ban_do_hanh_chinh_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(165,111,212,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Ba Ria - Vung Tau':
+                    return {
+                pane: 'pane_Ban_do_hanh_chinh_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(224,68,21,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Bac Giang':
+                    return {
+                pane: 'pane_Ban_do_hanh_chinh_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(189,30,204,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Bac Kan':
+                    return {
+                pane: 'pane_Ban_do_hanh_chinh_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(109,134,225,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Bac Lieu':
+                    return {
+                pane: 'pane_Ban_do_hanh_chinh_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(225,138,133,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Bac Ninh':
+                    return {
+                pane: 'pane_Ban_do_hanh_chinh_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(145,205,34,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Ben Tre':
+                    return {
+                pane: 'pane_Ban_do_hanh_chinh_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(100,217,102,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Binh Dinh':
+                    return {
+                pane: 'pane_Ban_do_hanh_chinh_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(98,137,227,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Binh Duong':
+                    return {
+                pane: 'pane_Ban_do_hanh_chinh_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(233,171,127,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Binh Phuoc':
+                    return {
+                pane: 'pane_Ban_do_hanh_chinh_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(71,216,39,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Binh Thuan':
+                    return {
+                pane: 'pane_Ban_do_hanh_chinh_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(143,107,209,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Ca Mau':
+                    return {
+                pane: 'pane_Ban_do_hanh_chinh_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(183,205,122,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Can Tho':
+                    return {
+                pane: 'pane_Ban_do_hanh_chinh_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(125,64,206,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Cao Bang':
+                    return {
+                pane: 'pane_Ban_do_hanh_chinh_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(179,218,132,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Da Nang':
+                    return {
+                pane: 'pane_Ban_do_hanh_chinh_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(91,150,208,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Dak Lak':
+                    return {
+                pane: 'pane_Ban_do_hanh_chinh_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(17,221,211,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Dak Nong':
+                    return {
+                pane: 'pane_Ban_do_hanh_chinh_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(73,221,199,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Dien Bien':
+                    return {
+                pane: 'pane_Ban_do_hanh_chinh_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(179,84,217,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Dong Nai':
+                    return {
+                pane: 'pane_Ban_do_hanh_chinh_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(151,240,78,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Dong Thap':
+                    return {
+                pane: 'pane_Ban_do_hanh_chinh_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(232,204,137,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Gia Lai':
+                    return {
+                pane: 'pane_Ban_do_hanh_chinh_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(213,105,172,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Ha Giang':
+                    return {
+                pane: 'pane_Ban_do_hanh_chinh_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(240,145,131,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Ha Nam':
+                    return {
+                pane: 'pane_Ban_do_hanh_chinh_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(178,18,214,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Ha Noi':
+                    return {
+                pane: 'pane_Ban_do_hanh_chinh_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(205,98,103,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Ha Tinh':
+                    return {
+                pane: 'pane_Ban_do_hanh_chinh_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(232,197,55,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Hai Duong':
+                    return {
+                pane: 'pane_Ban_do_hanh_chinh_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(41,164,201,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Hai Phong':
+                    return {
+                pane: 'pane_Ban_do_hanh_chinh_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(83,204,13,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Hau Giang':
+                    return {
+                pane: 'pane_Ban_do_hanh_chinh_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(217,76,137,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Ho Chi Minh':
+                    return {
+                pane: 'pane_Ban_do_hanh_chinh_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(216,36,165,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Hoa Binh':
+                    return {
+                pane: 'pane_Ban_do_hanh_chinh_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(219,236,33,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Hung Yen':
+                    return {
+                pane: 'pane_Ban_do_hanh_chinh_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(141,144,235,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Khanh Hoa':
+                    return {
+                pane: 'pane_Ban_do_hanh_chinh_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(122,170,204,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Kien Giang':
+                    return {
+                pane: 'pane_Ban_do_hanh_chinh_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(79,199,218,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Kon Tum':
+                    return {
+                pane: 'pane_Ban_do_hanh_chinh_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(222,37,204,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Lai Chau':
+                    return {
+                pane: 'pane_Ban_do_hanh_chinh_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(103,229,175,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Lam Dong':
+                    return {
+                pane: 'pane_Ban_do_hanh_chinh_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(99,221,88,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Lang Son':
+                    return {
+                pane: 'pane_Ban_do_hanh_chinh_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(200,198,64,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Lao Cai':
+                    return {
+                pane: 'pane_Ban_do_hanh_chinh_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(32,206,212,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Long An':
+                    return {
+                pane: 'pane_Ban_do_hanh_chinh_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(228,47,144,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Nam Dinh':
+                    return {
+                pane: 'pane_Ban_do_hanh_chinh_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(239,192,116,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Nghe An':
+                    return {
+                pane: 'pane_Ban_do_hanh_chinh_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(108,119,208,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Ninh Binh':
+                    return {
+                pane: 'pane_Ban_do_hanh_chinh_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(211,102,48,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Ninh Thuan':
+                    return {
+                pane: 'pane_Ban_do_hanh_chinh_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(200,93,200,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Phu Tho':
+                    return {
+                pane: 'pane_Ban_do_hanh_chinh_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(183,203,84,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Phu Yen':
+                    return {
+                pane: 'pane_Ban_do_hanh_chinh_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(71,223,16,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Quang Binh':
+                    return {
+                pane: 'pane_Ban_do_hanh_chinh_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(92,210,183,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Quang Nam':
+                    return {
+                pane: 'pane_Ban_do_hanh_chinh_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(220,161,97,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Quang Ngai':
+                    return {
+                pane: 'pane_Ban_do_hanh_chinh_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(204,66,100,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Quang Ninh':
+                    return {
+                pane: 'pane_Ban_do_hanh_chinh_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(38,222,75,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Quang Tri':
+                    return {
+                pane: 'pane_Ban_do_hanh_chinh_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(202,13,79,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Soc Trang':
+                    return {
+                pane: 'pane_Ban_do_hanh_chinh_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(149,120,235,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Son La':
+                    return {
+                pane: 'pane_Ban_do_hanh_chinh_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(94,204,167,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Tay Ninh':
+                    return {
+                pane: 'pane_Ban_do_hanh_chinh_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(218,201,72,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Thai Binh':
+                    return {
+                pane: 'pane_Ban_do_hanh_chinh_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(201,50,71,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Thai Nguyen':
+                    return {
+                pane: 'pane_Ban_do_hanh_chinh_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(67,36,221,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Thanh Hoa':
+                    return {
+                pane: 'pane_Ban_do_hanh_chinh_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(38,211,122,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Thua Thien Hue':
+                    return {
+                pane: 'pane_Ban_do_hanh_chinh_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(18,100,224,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Tien Giang':
+                    return {
+                pane: 'pane_Ban_do_hanh_chinh_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(97,220,144,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Tra Vinh':
+                    return {
+                pane: 'pane_Ban_do_hanh_chinh_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(52,205,96,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Tuyen Quang':
+                    return {
+                pane: 'pane_Ban_do_hanh_chinh_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(163,43,232,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Vinh Long':
+                    return {
+                pane: 'pane_Ban_do_hanh_chinh_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(206,58,179,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Vinh Phuc':
+                    return {
+                pane: 'pane_Ban_do_hanh_chinh_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(91,178,218,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Yen Bai':
+                    return {
+                pane: 'pane_Ban_do_hanh_chinh_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(40,235,59,1.0)',
+                interactive: true,
+            }
+                    break;
+                default:
+                    return {
+                pane: 'pane_Ban_do_hanh_chinh_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(93,84,214,1.0)',
+                interactive: true,
+            }
+                    break;
+            }
+        }
+        map.createPane('pane_Ban_do_hanh_chinh_0');
+        map.getPane('pane_Ban_do_hanh_chinh_0').style.zIndex = 400;
+        map.getPane('pane_Ban_do_hanh_chinh_0').style['mix-blend-mode'] = 'normal';
+        var layer_Ban_do_hanh_chinh_0 = new L.geoJson(json_Ban_do_hanh_chinh_0, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_Ban_do_hanh_chinh_0',
+            layerName: 'layer_Ban_do_hanh_chinh_0',
+            pane: 'pane_Ban_do_hanh_chinh_0',
+            onEachFeature: pop_Ban_do_hanh_chinh_0,
+            style: style_Ban_do_hanh_chinh_0_0,
+        });
+        bounds_group.addLayer(layer_Ban_do_hanh_chinh_0);
+        map.addLayer(layer_Ban_do_hanh_chinh_0);
+        setBounds();
+        var i = 0;
+        layer_Ban_do_hanh_chinh_0.eachLayer(function(layer) {
+            var context = {
+                feature: layer.feature,
+                variables: {}
+            };
+            layer.bindTooltip((layer.feature.properties['VARNAME_1'] !== null?String('<div style="color: #323232; font-size: 10pt; font-family: \'Open Sans\', sans-serif;">' + layer.feature.properties['VARNAME_1']) + '</div>':''), {permanent: true, offset: [-0, -16], className: 'css_Ban_do_hanh_chinh_0'});
+            labels.push(layer);
+            totalMarkers += 1;
+              layer.added = true;
+              addLabel(layer, i);
+              i++;
+        });
+        resetLabels([layer_Ban_do_hanh_chinh_0]);
+        map.on("zoomend", function(){
+            resetLabels([layer_Ban_do_hanh_chinh_0]);
+        });
+        map.on("layeradd", function(){
+            resetLabels([layer_Ban_do_hanh_chinh_0]);
+        });
+        map.on("layerremove", function(){
+            resetLabels([layer_Ban_do_hanh_chinh_0]);
+        });
+        </script>        
+    </body>
+</html>
